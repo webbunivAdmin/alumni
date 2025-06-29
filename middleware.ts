@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { connectToDatabase } from "@/lib/mongodb"
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -13,9 +12,10 @@ export async function middleware(request: NextRequest) {
     "/api/alumni/request-otp",
     "/api/alumni/verify-otp",
     "/api/admin/login",
+    "/api/uploadthing",
   ]
 
-  if (publicRoutes.includes(pathname)) {
+  if (publicRoutes.some((route) => pathname.startsWith(route))) {
     return NextResponse.next()
   }
 
@@ -30,24 +30,14 @@ export async function middleware(request: NextRequest) {
     try {
       const sessionData = JSON.parse(alumniSession)
       if (!sessionData.studentId || !sessionData.verificationCode) {
-        return NextResponse.redirect(new URL("/alumni/login", request.url))
-      }
-
-      // Verify session is still valid
-      const { db } = await connectToDatabase()
-      const alumni = await db.collection("alumni").findOne({
-        studentId: sessionData.studentId,
-        verificationCode: sessionData.verificationCode,
-        "metadata.status": "approved",
-      })
-
-      if (!alumni) {
         const response = NextResponse.redirect(new URL("/alumni/login", request.url))
         response.cookies.delete("alumni_session")
         return response
       }
     } catch (error) {
-      return NextResponse.redirect(new URL("/alumni/login", request.url))
+      const response = NextResponse.redirect(new URL("/alumni/login", request.url))
+      response.cookies.delete("alumni_session")
+      return response
     }
   }
 
@@ -62,23 +52,14 @@ export async function middleware(request: NextRequest) {
     try {
       const sessionData = JSON.parse(adminSession)
       if (!sessionData.id || !sessionData.identifier) {
-        return NextResponse.redirect(new URL("/admin/login", request.url))
-      }
-
-      // Verify admin session is still valid
-      const { db } = await connectToDatabase()
-      const admin = await db.collection("admins").findOne({
-        _id: sessionData.id,
-        identifier: sessionData.identifier,
-      })
-
-      if (!admin) {
         const response = NextResponse.redirect(new URL("/admin/login", request.url))
         response.cookies.delete("admin_session")
         return response
       }
     } catch (error) {
-      return NextResponse.redirect(new URL("/admin/login", request.url))
+      const response = NextResponse.redirect(new URL("/admin/login", request.url))
+      response.cookies.delete("admin_session")
+      return response
     }
   }
 
@@ -108,5 +89,15 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|public/).*)"],
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api/uploadthing (uploadthing routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public folder
+     */
+    "/((?!api/uploadthing|_next/static|_next/image|favicon.ico|public/).*)",
+  ],
 }
