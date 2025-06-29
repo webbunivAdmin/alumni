@@ -2,8 +2,8 @@ const { MongoClient } = require("mongodb");
 const bcrypt = require("bcryptjs");
 
 // MongoDB connection config
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://alumni:123@cluster0.qyka68l.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-const MONGODB_DB = process.env.MONGODB_DB || "bugema_university"; // fallback DB name if not in .env
+const MONGODB_URI = process.env.MONGODB_URI;
+const MONGODB_DB = process.env.MONGODB_DB; // fallback DB name if not in .env
 
 if (!MONGODB_URI) {
   throw new Error("Please define the MONGODB_URI environment variable inside .env.local");
