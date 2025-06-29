@@ -1,41 +1,80 @@
-import { connectToDatabase } from "../lib/mongodb.js"
-import bcrypt from "bcryptjs"
+const { MongoClient } = require("mongodb");
+const bcrypt = require("bcryptjs");
+
+// MongoDB connection config
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://alumni:123@cluster0.qyka68l.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
+const MONGODB_DB = process.env.MONGODB_DB || "bugema_university"; // fallback DB name if not in .env
+
+if (!MONGODB_URI) {
+  throw new Error("Please define the MONGODB_URI environment variable inside .env.local");
+}
+if (!MONGODB_DB) {
+  throw new Error("Please define the MONGODB_DB environment variable inside .env.local");
+}
+
+// Connection caching
+let cached = global.mongo;
+if (!cached) {
+  cached = global.mongo = { conn: null, promise: null };
+}
+
+async function connectToDatabase() {
+  if (cached.conn) return cached.conn;
+
+  if (!cached.promise) {
+    const opts = {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    };
+
+    cached.promise = MongoClient.connect(MONGODB_URI, opts).then((client) => {
+      return {
+        client,
+        db: client.db(MONGODB_DB),
+      };
+    });
+  }
+
+  cached.conn = await cached.promise;
+  return cached.conn;
+}
 
 async function seedAdmin() {
   try {
-    const { db } = await connectToDatabase()
+    const { db } = await connectToDatabase();
 
-    // Check if admin already exists
-    const existingAdmin = await db.collection("admins").findOne({ identifier: "admin" })
-
+    const existingAdmin = await db.collection("admins").findOne({ identifier: "admin" });
     if (existingAdmin) {
-      console.log("Admin already exists")
-      return
+      console.log("Admin already exists");
+      return;
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash("admin123", 12)
+    const hashedPassword = await bcrypt.hash("admin123", 12);
 
-    // Create admin user
     const admin = {
       identifier: "admin",
       password: hashedPassword,
       name: "System Administrator",
-      email: "admin@bugemauniv.ac.ug",
+      email: "alumni@bugemauniv.ac.ug",
       role: "super_admin",
-      permissions: ["alumni_management", "voting_management", "user_management", "system_settings"],
+      permissions: [
+        "alumni_management",
+        "voting_management",
+        "user_management",
+        "system_settings",
+      ],
       createdAt: new Date(),
       updatedAt: new Date(),
-    }
+    };
 
-    await db.collection("admins").insertOne(admin)
+    await db.collection("admins").insertOne(admin);
 
-    console.log("Admin user created successfully")
-    console.log("Identifier: admin")
-    console.log("Password: admin123")
+    console.log("✅ Admin user created successfully");
+    console.log("Identifier: admin");
+    console.log("Password: admin@123");
   } catch (error) {
-    console.error("Error seeding admin:", error)
+    console.error("❌ Error seeding admin:", error);
   }
 }
 
-seedAdmin()
+seedAdmin();
