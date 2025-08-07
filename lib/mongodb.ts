@@ -1,6 +1,6 @@
 import { MongoClient, type Db } from "mongodb"
 
-const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:27017"
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://alumni:123@cluster0.qyka68l.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 const MONGODB_DB = process.env.MONGODB_DB
 
 if (!MONGODB_URI) {

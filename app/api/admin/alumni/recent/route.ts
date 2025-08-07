@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
     const recentAlumni = await db
       .collection("alumni")
       .find({})
-      .sort({ "metadata.registrationDate": -1 })
+      // .sort({ "metadata.registrationDate": -1 })
       .limit(10)
       .toArray()
 

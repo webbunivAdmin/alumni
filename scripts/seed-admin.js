@@ -1,9 +1,12 @@
+// Load environment variables from .env.local
+require("dotenv").config({ path: ".env.local" });
+
 const { MongoClient } = require("mongodb");
 const bcrypt = require("bcryptjs");
 
 // MongoDB connection config
 const MONGODB_URI = process.env.MONGODB_URI;
-const MONGODB_DB = process.env.MONGODB_DB; // fallback DB name if not in .env
+const MONGODB_DB = process.env.MONGODB_DB;
 
 if (!MONGODB_URI) {
   throw new Error("Please define the MONGODB_URI environment variable inside .env.local");
@@ -45,7 +48,7 @@ async function seedAdmin() {
 
     const existingAdmin = await db.collection("admins").findOne({ identifier: "admin" });
     if (existingAdmin) {
-      console.log("Admin already exists");
+      console.log("⚠️ Admin already exists");
       return;
     }
 
@@ -71,7 +74,7 @@ async function seedAdmin() {
 
     console.log("✅ Admin user created successfully");
     console.log("Identifier: admin");
-    console.log("Password: admin@123");
+    console.log("Password: admin123");
   } catch (error) {
     console.error("❌ Error seeding admin:", error);
   }
