@@ -232,7 +232,7 @@ export async function sendAlumniRegistrationConfirmation(data: AlumniRegistratio
   const mailOptions = {
     from: {
       name: "Bugema University Alumni Office",
-      address: process.env.EMAIL_SERVER_USER!,
+      address: process.env.EMAIL_FROM!,
     },
     to: data.email,
     subject: "🎓 Alumni Registration Confirmation - Save Your Verification Code",
@@ -342,7 +342,7 @@ export async function sendAlumniApprovalNotification(data: AlumniRegistrationEma
   const mailOptions = {
     from: {
       name: "Bugema University Alumni Office",
-      address: process.env.EMAIL_SERVER_USER!,
+      address: process.env.EMAIL_FROM!,
     },
     to: data.email,
     subject: "🎉 Alumni Registration Approved - Welcome to the Community!",
